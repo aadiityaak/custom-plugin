@@ -29,10 +29,10 @@ if (!defined('WPINC')) {
 define('CUSTOM_PLUGIN_URL', plugin_dir_url(__FILE__));
 require_once plugin_dir_path(__FILE__) . '/inc/enqueue.php';
 require_once plugin_dir_path(__FILE__) . '/inc/function.php';
-require_once plugin_dir_path(__FILE__) . '/inc/post-type.php';
-require_once plugin_dir_path(__FILE__) . '/inc/taxonomy.php';
-require_once plugin_dir_path(__FILE__) . '/inc/metabox.php';
-require_once plugin_dir_path(__FILE__) . '/inc/collumn.php';
-require_once plugin_dir_path(__FILE__) . '/inc/admin-page.php';
-require_once plugin_dir_path(__FILE__) . '/inc/shortcodes.php';
-require_once plugin_dir_path(__FILE__) . '/inc/ajax.php';
+// require_once plugin_dir_path(__FILE__) . '/inc/post-type.php';
+// require_once plugin_dir_path(__FILE__) . '/inc/taxonomy.php';
+// require_once plugin_dir_path(__FILE__) . '/inc/metabox.php';
+// require_once plugin_dir_path(__FILE__) . '/inc/collumn.php';
+// require_once plugin_dir_path(__FILE__) . '/inc/admin-page.php';
+// require_once plugin_dir_path(__FILE__) . '/inc/shortcodes.php';
+// require_once plugin_dir_path(__FILE__) . '/inc/ajax.php';
