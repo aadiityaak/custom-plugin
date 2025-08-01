@@ -17,6 +17,30 @@ class Custom_Plugin_Shortcodes
     add_shortcode('custom_form', array($this, 'custom_form_shortcode'));
     add_shortcode('custom_message', array($this, 'custom_message_shortcode'));
     add_shortcode('custom_data', array($this, 'custom_data_shortcode'));
+    add_shortcode('header-search', array($this, 'custom_header_search_shortcode'));
+  }
+
+
+  public function custom_header_search_shortcode($atts)
+  {
+    $atts = shortcode_atts(array(
+      'placeholder' => __('Search...', 'custom-plugin'),
+      'button_text' => __('Search', 'custom-plugin')
+    ), $atts, 'header-search');
+
+    ob_start();
+?>
+    <div class="custom-plugin-header-search">
+      <form method="get" action="<?php echo esc_url(home_url('/')); ?>">
+        <input type="text" name="s" placeholder="<?php echo esc_attr($atts['placeholder']); ?>" />
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search-icon lucide-search">
+          <path d="m21 21-4.34-4.34" />
+          <circle cx="11" cy="11" r="8" />
+        </svg>
+      </form>
+    </div>
+  <?php
+    return ob_get_clean();
   }
 
   /**
@@ -80,7 +104,7 @@ class Custom_Plugin_Shortcodes
     }
 
     ob_start();
-?>
+  ?>
     <div class="custom-plugin-data">
       <h3><?php _e('Latest Submissions', 'custom-plugin'); ?></h3>
       <table class="custom-plugin-table">
