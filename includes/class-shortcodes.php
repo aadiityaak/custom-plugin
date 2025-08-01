@@ -1,0 +1,113 @@
+<?php
+
+/**
+ * Shortcodes for Custom Plugin
+ */
+
+// Prevent direct access
+if (!defined('ABSPATH')) {
+  exit;
+}
+
+class Custom_Plugin_Shortcodes
+{
+
+  public function __construct()
+  {
+    add_shortcode('custom_form', array($this, 'custom_form_shortcode'));
+    add_shortcode('custom_message', array($this, 'custom_message_shortcode'));
+    add_shortcode('custom_data', array($this, 'custom_data_shortcode'));
+  }
+
+  /**
+   * Custom form shortcode
+   * Usage: [custom_form]
+   */
+  public function custom_form_shortcode($atts)
+  {
+    $atts = shortcode_atts(array(
+      'title' => __('Contact Form', 'custom-plugin'),
+      'button_text' => __('Submit', 'custom-plugin')
+    ), $atts, 'custom_form');
+
+    return Custom_Plugin_Frontend::display_form();
+  }
+
+  /**
+   * Custom message shortcode
+   * Usage: [custom_message text="Your message here"]
+   */
+  public function custom_message_shortcode($atts)
+  {
+    $atts = shortcode_atts(array(
+      'text' => __('Hello World!', 'custom-plugin'),
+      'style' => 'default'
+    ), $atts, 'custom_message');
+
+    $class = 'custom-plugin-message-' . sanitize_html_class($atts['style']);
+
+    return '<div class="' . esc_attr($class) . '">' . esc_html($atts['text']) . '</div>';
+  }
+
+  /**
+   * Custom data display shortcode
+   * Usage: [custom_data limit="5"]
+   */
+  public function custom_data_shortcode($atts)
+  {
+    $atts = shortcode_atts(array(
+      'limit' => 10,
+      'orderby' => 'created_at',
+      'order' => 'DESC'
+    ), $atts, 'custom_data');
+
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'custom_plugin_data';
+
+    $limit = intval($atts['limit']);
+    $orderby = sanitize_sql_orderby($atts['orderby']);
+    $order = in_array(strtoupper($atts['order']), array('ASC', 'DESC')) ? strtoupper($atts['order']) : 'DESC';
+
+    $query = $wpdb->prepare(
+      "SELECT * FROM {$table_name} ORDER BY {$orderby} {$order} LIMIT %d",
+      $limit
+    );
+
+    $results = $wpdb->get_results($query);
+
+    if (empty($results)) {
+      return '<p>' . __('No data found.', 'custom-plugin') . '</p>';
+    }
+
+    ob_start();
+?>
+    <div class="custom-plugin-data">
+      <h3><?php _e('Latest Submissions', 'custom-plugin'); ?></h3>
+      <table class="custom-plugin-table">
+        <thead>
+          <tr>
+            <th><?php _e('Name', 'custom-plugin'); ?></th>
+            <th><?php _e('Email', 'custom-plugin'); ?></th>
+            <th><?php _e('Message', 'custom-plugin'); ?></th>
+            <th><?php _e('Date', 'custom-plugin'); ?></th>
+          </tr>
+        </thead>
+        <tbody>
+          <?php foreach ($results as $row): ?>
+            <tr>
+              <td><?php echo esc_html($row->name); ?></td>
+              <td><?php echo esc_html($row->email); ?></td>
+              <td><?php echo esc_html(wp_trim_words($row->message, 10)); ?></td>
+              <td><?php echo esc_html(date('Y-m-d H:i', strtotime($row->created_at))); ?></td>
+            </tr>
+          <?php endforeach; ?>
+        </tbody>
+      </table>
+    </div>
+<?php
+    return ob_get_clean();
+  }
+}
+
+// Initialize shortcodes
+// new Custom_Plugin_Shortcodes();
