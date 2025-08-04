@@ -18,6 +18,12 @@ jQuery(document).ready(function ($) {
     // Status change handling
     initStatusHandling();
 
+    // Timeline functionality
+    initTimelineFunctionality();
+
+    // Photo upload functionality
+    initPhotoUpload();
+
     // Form validation
     initFormValidation();
   }
@@ -63,13 +69,32 @@ jQuery(document).ready(function ($) {
         $priceInput.before('<span class="price-prefix">Rp </span>');
       }
     }
+
+    // Order price formatting
+    $('input[name="order_total_price"]').on("blur", function () {
+      var value = $(this).val();
+      if (value) {
+        // Format number with thousands separator
+        var formatted = parseFloat(value).toLocaleString("id-ID");
+        $(this).val(formatted);
+      }
+    });
+
+    $('input[name="order_total_price"]').on("focus", function () {
+      var value = $(this).val();
+      if (value) {
+        // Remove formatting for editing
+        var clean = value.replace(/[^\d]/g, "");
+        $(this).val(clean);
+      }
+    });
   }
 
   /**
    * Initialize status handling
    */
   function initStatusHandling() {
-    var $statusSelect = $("#custom_order_status");
+    var $statusSelect = $("#custom_order_status, select[name='order_status']");
 
     if ($statusSelect.length) {
       // Add color coding based on status
@@ -104,6 +129,133 @@ jQuery(document).ready(function ($) {
   }
 
   /**
+   * Initialize timeline functionality
+   */
+  function initTimelineFunctionality() {
+    // Timeline date/time input functionality
+    $(
+      '.timeline-step input[type="date"], .timeline-step input[type="time"]'
+    ).on("change", function () {
+      var $stepContainer = $(this).closest(".timeline-step");
+      var $dateInput = $stepContainer.find('input[type="date"]');
+      var $timeInput = $stepContainer.find('input[type="time"]');
+
+      var hasDate = $dateInput.val() !== "";
+      var hasTime = $timeInput.val() !== "";
+
+      if (hasDate && hasTime) {
+        // Step completed - both date and time filled
+        $stepContainer.addClass("completed");
+      } else {
+        // Step not completed
+        $stepContainer.removeClass("completed");
+      }
+
+      // Update order status based on timeline progress
+      updateOrderStatus();
+    });
+
+    // Initialize timeline state on page load
+    $(".timeline-step").each(function () {
+      var $stepContainer = $(this);
+      var $dateInput = $stepContainer.find('input[type="date"]');
+      var $timeInput = $stepContainer.find('input[type="time"]');
+
+      var hasDate = $dateInput.val() !== "";
+      var hasTime = $timeInput.val() !== "";
+
+      if (hasDate && hasTime) {
+        $stepContainer.addClass("completed");
+      }
+    });
+  }
+
+  /**
+   * Initialize photo upload functionality
+   */
+  function initPhotoUpload() {
+    // Photo upload functionality
+    $(".upload-photo-btn").on("click", function (e) {
+      e.preventDefault();
+
+      var button = $(this);
+      var stepContainer = button.closest(".timeline-step");
+      var photoPreview = button.siblings(".photo-preview");
+      var hiddenInput = button.siblings('input[type="hidden"]');
+
+      // WordPress media uploader
+      var mediaUploader = wp.media({
+        title: "Upload Photo Proof",
+        button: {
+          text: "Use this photo",
+        },
+        multiple: false,
+        library: {
+          type: "image",
+        },
+      });
+
+      mediaUploader.on("select", function () {
+        var attachment = mediaUploader
+          .state()
+          .get("selection")
+          .first()
+          .toJSON();
+
+        // Update hidden input with attachment ID
+        hiddenInput.val(attachment.id);
+
+        // Show photo preview
+        var imageHtml =
+          '<img src="' +
+          attachment.sizes.thumbnail.url +
+          '" alt="Photo Proof" style="max-width: 150px; height: auto;">';
+        imageHtml +=
+          "<p><strong>File:</strong> " + attachment.filename + "</p>";
+        imageHtml +=
+          '<button type="button" class="button remove-photo-btn" style="margin-top: 5px;">Remove Photo</button>';
+
+        photoPreview.html(imageHtml).show();
+      });
+
+      mediaUploader.open();
+    });
+
+    // Remove photo functionality
+    $(document).on("click", ".remove-photo-btn", function (e) {
+      e.preventDefault();
+
+      var button = $(this);
+      var photoPreview = button.closest(".photo-preview");
+      var hiddenInput = photoPreview.siblings('input[type="hidden"]');
+
+      hiddenInput.val("");
+      photoPreview.html("").hide();
+    });
+  }
+
+  /**
+   * Auto-update order status based on timeline completion
+   */
+  function updateOrderStatus() {
+    var completedSteps = $(".timeline-step.completed").length;
+    var $statusSelect = $('select[name="order_status"]');
+
+    if ($statusSelect.length && !$statusSelect.data("manual-override")) {
+      if (completedSteps === 0) {
+        $statusSelect.val("pending");
+      } else if (completedSteps < 9) {
+        $statusSelect.val("processing");
+      } else if (completedSteps === 10) {
+        $statusSelect.val("shipped");
+      } else if (completedSteps === 11) {
+        $statusSelect.val("delivered");
+      }
+      $statusSelect.trigger("change");
+    }
+  }
+
+  /**
    * Initialize form validation
    */
   function initFormValidation() {
@@ -128,6 +280,7 @@ jQuery(document).ready(function ($) {
     // Form submission validation
     $("#post").on("submit", function (e) {
       var hasErrors = false;
+      var errors = [];
 
       // Check price field
       var $priceInput = $("#custom_product_harga");
@@ -141,14 +294,56 @@ jQuery(document).ready(function ($) {
               '<div class="error-message">Please enter a valid price</div>'
             );
           }
+          errors.push("Please enter a valid price");
+        }
+      }
+
+      // Check if order has customer info when timeline steps are completed
+      var hasCompletedSteps = $(".timeline-step.completed").length > 0;
+      if (hasCompletedSteps) {
+        if (!$('input[name="customer_name"]').val().trim()) {
+          errors.push(
+            "Customer Name is required when timeline steps are completed."
+          );
+          hasErrors = true;
+        }
+        if (!$('input[name="customer_phone"]').val().trim()) {
+          errors.push(
+            "Customer Phone is required when timeline steps are completed."
+          );
+          hasErrors = true;
+        }
+      }
+
+      // Check delivery info for step 10
+      var step10Completed = $('.timeline-step[data-step="10"]').hasClass(
+        "completed"
+      );
+      if (step10Completed) {
+        if (!$('input[name="delivery_driver_name"]').val().trim()) {
+          errors.push(
+            "Delivery Driver Name is required for completed delivery step."
+          );
+          hasErrors = true;
+        }
+        if (!$('input[name="delivery_driver_phone"]').val().trim()) {
+          errors.push(
+            "Delivery Driver Phone is required for completed delivery step."
+          );
+          hasErrors = true;
         }
       }
 
       if (hasErrors) {
         e.preventDefault();
-        alert("Please fix the errors before saving.");
+        alert("Please fix the following errors:\n\n" + errors.join("\n"));
         return false;
       }
+    });
+
+    // Manual status override detection
+    $('select[name="order_status"]').on("change", function () {
+      $(this).data("manual-override", true);
     });
   }
 
@@ -182,6 +377,15 @@ jQuery(document).ready(function ($) {
       $notification.fadeOut();
     }, 3000);
   }
+
+  // Show/hide sections based on post type
+  if ($("body").hasClass("post-type-custom_order")) {
+    $(".order-meta-box").show();
+  }
+
+  if ($("body").hasClass("post-type-custom_product")) {
+    $(".product-meta-box").show();
+  }
 });
 
 // Add CSS for styling
@@ -214,11 +418,11 @@ jQuery(document).ready(function ($) {
         .custom-plugin-meta-box .price-input input {
             padding-left: 35px !important;
         }
-        #custom_order_status.status-pending { border-left: 4px solid #f57c00; }
-        #custom_order_status.status-processing { border-left: 4px solid #1976d2; }
-        #custom_order_status.status-shipped { border-left: 4px solid #7b1fa2; }
-        #custom_order_status.status-delivered { border-left: 4px solid #388e3c; }
-        #custom_order_status.status-cancelled { border-left: 4px solid #d32f2f; }
+        #custom_order_status.status-pending, select[name="order_status"].status-pending { border-left: 4px solid #f57c00; }
+        #custom_order_status.status-processing, select[name="order_status"].status-processing { border-left: 4px solid #1976d2; }
+        #custom_order_status.status-shipped, select[name="order_status"].status-shipped { border-left: 4px solid #7b1fa2; }
+        #custom_order_status.status-delivered, select[name="order_status"].status-delivered { border-left: 4px solid #388e3c; }
+        #custom_order_status.status-cancelled, select[name="order_status"].status-cancelled { border-left: 4px solid #d32f2f; }
         </style>
     `;
 

@@ -212,7 +212,16 @@ class CustomPlugin
   public function frontend_scripts()
   {
     wp_enqueue_style('custom-plugin-frontend', CUSTOM_PLUGIN_PLUGIN_URL . 'assets/css/frontend.css', array(), CUSTOM_PLUGIN_VERSION);
+    wp_enqueue_style('custom-plugin-shortcode', CUSTOM_PLUGIN_PLUGIN_URL . 'assets/css/shortcode.css', array(), CUSTOM_PLUGIN_VERSION);
+
     wp_enqueue_script('custom-plugin-frontend', CUSTOM_PLUGIN_PLUGIN_URL . 'assets/js/frontend.js', array('jquery'), CUSTOM_PLUGIN_VERSION, true);
+    wp_enqueue_script('custom-plugin-tracking', CUSTOM_PLUGIN_PLUGIN_URL . 'assets/js/tracking.js', array('jquery'), CUSTOM_PLUGIN_VERSION, true);
+
+    // Localize script for AJAX
+    wp_localize_script('custom-plugin-tracking', 'ajax_object', array(
+      'ajax_url' => admin_url('admin-ajax.php'),
+      'nonce' => wp_create_nonce('track_order_nonce')
+    ));
   }
 
   /**

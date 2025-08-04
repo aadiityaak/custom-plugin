@@ -19,13 +19,11 @@ class Custom_Plugin_Shortcodes
     add_shortcode('custom_data', array($this, 'custom_data_shortcode'));
     add_shortcode('header-search', array($this, 'custom_header_search_shortcode'));
     add_shortcode('custom_order_form', array($this, 'render_order_form'));
-    add_shortcode('order_tracking', array($this, 'render_order_tracking'));
+    add_shortcode('harga', array($this, 'render_harga_shortcode'));
 
     // AJAX handlers
     add_action('wp_ajax_submit_custom_order', array($this, 'handle_order_submission'));
     add_action('wp_ajax_nopriv_submit_custom_order', array($this, 'handle_order_submission'));
-    add_action('wp_ajax_track_order', array($this, 'handle_order_tracking'));
-    add_action('wp_ajax_nopriv_track_order', array($this, 'handle_order_tracking'));
     add_action('wp_enqueue_scripts', array($this, 'enqueue_frontend_scripts'));
   }
 
@@ -73,6 +71,22 @@ class Custom_Plugin_Shortcodes
       return true;
     }
     return false;
+  }
+
+  public function render_harga_shortcode($atts)
+  {
+    global $post;
+
+    // Parse shortcode attributes
+    $atts = shortcode_atts(array(
+      'product_id' => $post->ID,
+    ), $atts, 'harga');
+
+    // Get product price
+    $price = get_post_meta($atts['product_id'], '_custom_product_harga', true);
+
+    // Return formatted price
+    return $price ? 'Rp ' . number_format($price, 0, ',', '.') : __('Harga tidak tersedia', 'custom-plugin');
   }
 
   /**
@@ -308,215 +322,6 @@ class Custom_Plugin_Shortcodes
       'order_id' => $order_id,
       'invoice_id' => $invoice_id,
       'redirect_url' => get_permalink($order_id)
-    ));
-  }
-
-  /**
-   * Render order tracking shortcode
-   */
-  public function render_order_tracking($atts)
-  {
-    // Parse shortcode attributes
-    $atts = shortcode_atts(array(
-      'title' => __('Lacak Pesanan', 'custom-plugin'),
-      'placeholder' => __('Masukkan nomor invoice (contoh: INV-2024-001)', 'custom-plugin'),
-      'button_text' => __('Lacak Pesanan', 'custom-plugin'),
-      'class' => ''
-    ), $atts, 'order_tracking');
-
-    // Start output buffering
-    ob_start();
-  ?>
-    <div class="order-tracking-container <?php echo esc_attr($atts['class']); ?>">
-      <div class="tracking-search-form">
-        <form id="order-tracking-form" class="tracking-form">
-          <?php wp_nonce_field('track_order_nonce', 'track_order_nonce_field'); ?>
-          <div class="tracking-input-group">
-            <input type="text"
-              id="invoice_number"
-              name="invoice_number"
-              placeholder="<?php echo esc_attr($atts['placeholder']); ?>"
-              class="tracking-input"
-              required>
-            <button type="submit" class="tracking-btn">
-              <span class="btn-text"><?php echo esc_html($atts['button_text']); ?></span>
-              <span class="btn-loading" style="display: none;">
-                <span class="spinner"></span>
-                <?php _e('Mencari...', 'custom-plugin'); ?>
-              </span>
-            </button>
-          </div>
-        </form>
-      </div>
-
-      <div class="tracking-results" style="display: none;">
-        <div class="tracking-header">
-          <h4><?php _e('Status Pengiriman', 'custom-plugin'); ?></h4>
-          <div class="order-info">
-            <div class="order-detail">
-              <span class="label"><?php _e('No. Invoice:', 'custom-plugin'); ?></span>
-              <span class="value invoice-value"></span>
-            </div>
-            <div class="order-detail">
-              <span class="label"><?php _e('Status:', 'custom-plugin'); ?></span>
-              <span class="value status-badge"></span>
-            </div>
-          </div>
-        </div>
-
-        <div class="tracking-timeline">
-          <div class="timeline-header">
-            <h5><?php _e('Riwayat Pengiriman', 'custom-plugin'); ?></h5>
-          </div>
-          <div class="timeline-content">
-            <!-- Timeline will be populated via AJAX -->
-          </div>
-        </div>
-
-        <div class="delivery-info" style="display: none;">
-          <h5><?php _e('Informasi Pengiriman', 'custom-plugin'); ?></h5>
-          <div class="delivery-details">
-            <div class="driver-info">
-              <span class="label"><?php _e('Driver:', 'custom-plugin'); ?></span>
-              <span class="driver-name"></span>
-            </div>
-            <div class="driver-phone">
-              <span class="label"><?php _e('No. Telepon:', 'custom-plugin'); ?></span>
-              <span class="phone-number"></span>
-            </div>
-          </div>
-        </div>
-
-        <div class="proof-delivery" style="display: none;">
-          <h5><?php _e('Bukti Penerimaan', 'custom-plugin'); ?></h5>
-          <div class="proof-image">
-            <!-- Delivery proof image will be shown here -->
-          </div>
-        </div>
-      </div>
-
-      <div class="tracking-messages">
-        <div class="success-message" style="display: none;"></div>
-        <div class="error-message" style="display: none;"></div>
-      </div>
-    </div>
-  <?php
-    return ob_get_clean();
-  }
-
-  /**
-   * Handle order tracking via AJAX
-   */
-  public function handle_order_tracking()
-  {
-    // Verify nonce
-    if (!wp_verify_nonce($_POST['track_order_nonce_field'], 'track_order_nonce')) {
-      wp_die(__('Security check failed', 'custom-plugin'));
-    }
-
-    // Sanitize input
-    $invoice_number = sanitize_text_field($_POST['invoice_number']);
-
-    if (empty($invoice_number)) {
-      wp_send_json_error(array(
-        'message' => __('Nomor invoice harus diisi.', 'custom-plugin')
-      ));
-    }
-
-    // Search for order by title (invoice number)
-    $orders = get_posts(array(
-      'post_type' => 'custom_order',
-      'post_status' => 'publish',
-      'title' => $invoice_number,
-      'posts_per_page' => 1
-    ));
-
-    if (empty($orders)) {
-      wp_send_json_error(array(
-        'message' => __('Pesanan tidak ditemukan. Pastikan nomor invoice benar.', 'custom-plugin')
-      ));
-    }
-
-    $order = $orders[0];
-    $order_id = $order->ID;
-
-    // Get order details
-    $status = get_post_meta($order_id, '_custom_order_status', true);
-    $customer_name = get_post_meta($order_id, '_custom_order_nama_pemesan', true);
-    $customer_phone = get_post_meta($order_id, '_custom_order_no_hp', true);
-    $timeline = get_post_meta($order_id, '_custom_order_timeline', true);
-    $timeline = $timeline ? $timeline : array();
-
-    // Timeline steps labels
-    $timeline_steps = array(
-      1 => 'Pesanan diterima dan diteruskan ke bagian produksi',
-      2 => 'Konfirmasi desain',
-      3 => 'Konfirmasi warna',
-      4 => 'Progres 25 persen selesai',
-      5 => 'Progres 50 persen selesai',
-      6 => 'Progres 75 persen selesai',
-      7 => 'Pesanan selesai dicetak',
-      8 => 'Proses packing dan QC',
-      9 => 'Pesanan disiapkan oleh tim delivery',
-      10 => 'Pesanan diantarkan dan otw menuju lokasi',
-      11 => 'Pesanan diterima (terlampir bukti foto)'
-    );
-
-    // Build timeline HTML
-    $timeline_html = '';
-    foreach ($timeline_steps as $step_num => $step_label) {
-      $step_data = isset($timeline[$step_num]) ? $timeline[$step_num] : null;
-      $is_completed = $step_data && isset($step_data['date']) && isset($step_data['time']);
-
-      $timeline_html .= '<div class="timeline-item ' . ($is_completed ? 'completed' : 'pending') . '">';
-      $timeline_html .= '<div class="timeline-marker"></div>';
-      $timeline_html .= '<div class="timeline-content">';
-      $timeline_html .= '<div class="timeline-title">' . esc_html($step_label) . '</div>';
-
-      if ($is_completed) {
-        $datetime = $step_data['date'] . ' ' . $step_data['time'];
-        $timeline_html .= '<div class="timeline-date">' . date('d/m/Y H:i', strtotime($datetime)) . '</div>';
-      } else {
-        $timeline_html .= '<div class="timeline-date pending-text">Menunggu</div>';
-      }
-
-      $timeline_html .= '</div>';
-      $timeline_html .= '</div>';
-    }
-
-    // Get delivery info (step 10)
-    $delivery_info = array();
-    if (isset($timeline[10])) {
-      $delivery_info = array(
-        'driver_name' => isset($timeline[10]['driver_name']) ? $timeline[10]['driver_name'] : '',
-        'driver_phone' => isset($timeline[10]['driver_phone']) ? $timeline[10]['driver_phone'] : ''
-      );
-    }
-
-    // Get proof image (step 11)
-    $proof_image = '';
-    if (isset($timeline[11]['photo_proof'])) {
-      $proof_image = wp_get_attachment_url($timeline[11]['photo_proof']);
-    }
-
-    // Status labels
-    $status_labels = array(
-      'pending' => __('Menunggu', 'custom-plugin'),
-      'processing' => __('Diproses', 'custom-plugin'),
-      'shipped' => __('Dikirim', 'custom-plugin'),
-      'delivered' => __('Terkirim', 'custom-plugin'),
-      'cancelled' => __('Dibatalkan', 'custom-plugin')
-    );
-
-    wp_send_json_success(array(
-      'invoice' => $invoice_number,
-      'status' => $status,
-      'status_label' => isset($status_labels[$status]) ? $status_labels[$status] : ucfirst($status),
-      'customer_name' => $customer_name,
-      'customer_phone' => $customer_phone,
-      'timeline_html' => $timeline_html,
-      'delivery_info' => $delivery_info,
-      'proof_image' => $proof_image
     ));
   }
 

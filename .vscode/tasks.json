@@ -1,0 +1,15 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Test WordPress Plugin",
+			"type": "shell",
+			"command": "echo",
+			"args": [
+				"Plugin custom-plugin berhasil dibuat dengan fitur lengkap!"
+			],
+			"group": "test",
+			"isBackground": false
+		}
+	]
+}

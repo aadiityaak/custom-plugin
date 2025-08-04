@@ -1,6 +1,6 @@
-# Custom Plugin
+# Custom Plugin - WordPress Product & Order Management
 
-Plugin WordPress kustom yang menyediakan fitur-fitur tambahan untuk website Anda.
+Plugin WordPress lengkap untuk manajemen produk dan pemesanan dengan sistem tracking timeline yang modern dan user-friendly.
 
 ## Deskripsi
 
@@ -147,6 +147,53 @@ Untuk dukungan dan pertanyaan, silakan hubungi:
 - Email: support@yourwebsite.com
 - Website: https://yourwebsite.com/support
 
+## Update Terbaru: Order Tracking System
+
+### 🚀 Fitur Tracking Pesanan (Expedition-Style)
+
+Plugin sekarang dilengkapi dengan sistem tracking pesanan yang mirip dengan website ekspedisi profesional:
+
+#### Shortcode Order Tracking: `[order_tracking]`
+
+- **Form Pencarian**: Input invoice number dengan validasi
+- **Timeline Visual**: 11 tahap pengerjaan dengan progress markers
+- **Info Pengiriman**: Detail driver dan kontak
+- **Bukti Penerimaan**: Foto proof of delivery
+- **Responsive Design**: Mobile-friendly dengan styling clean minimal
+
+#### Timeline Tracking (11 Steps):
+
+1. Pesanan diterima dan diteruskan ke bagian produksi
+2. Konfirmasi desain
+3. Konfirmasi warna
+4. Progres 25% selesai
+5. Progres 50% selesai
+6. Progres 75% selesai
+7. Pesanan selesai dicetak
+8. Proses packing dan QC
+9. Pesanan disiapkan oleh tim delivery
+10. Pesanan diantarkan dan otw menuju lokasi
+11. Pesanan diterima (dengan bukti foto)
+
+#### Cara Penggunaan:
+
+```php
+// Basic tracking form
+[order_tracking]
+
+// Custom tracking form
+[order_tracking title="Lacak Pesanan Anda" placeholder="Masukkan No. Invoice"]
+```
+
+#### Styling:
+
+- **Clean Minimal Design**: Flat design tanpa border-radius
+- **Professional Color Scheme**: Grayscale dengan accent colors
+- **Expedition-Style Interface**: Mirip tracking website kurir
+- **Timeline Visualization**: Visual progress dengan green markers
+
+---
+
 ## Lisensi
 
 Plugin ini dirilis di bawah lisensi GPL v2 atau yang lebih baru.
@@ -161,3 +208,7 @@ Dikembangkan oleh Your Name
 
 - Website: https://yourwebsite.com
 - Email: your.email@domain.com
+
+**Status Pengembangan**: ✅ COMPLETE  
+**Versi**: 1.0.0  
+**Kompatibilitas**: WordPress 5.0+

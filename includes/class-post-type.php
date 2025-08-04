@@ -12,23 +12,23 @@ class CustomPluginPostType
   public function __construct()
   {
     add_action('init', array($this, 'register_post_types'));
-    
+
     // Add custom columns for products
     add_filter('manage_custom_product_posts_columns', array($this, 'add_product_columns'));
     add_action('manage_custom_product_posts_custom_column', array($this, 'display_product_columns'), 10, 2);
     add_filter('manage_edit-custom_product_sortable_columns', array($this, 'make_product_columns_sortable'));
-    
+
     // Add custom columns for orders
     add_filter('manage_custom_order_posts_columns', array($this, 'add_order_columns'));
     add_action('manage_custom_order_posts_custom_column', array($this, 'display_order_columns'), 10, 2);
     add_filter('manage_edit-custom_order_sortable_columns', array($this, 'make_order_columns_sortable'));
-    
+
     // Handle sorting
     add_action('pre_get_posts', array($this, 'handle_custom_sorting'));
-    
+
     // Handle quick edit save
     add_action('wp_ajax_save_custom_fields_quick_edit', array($this, 'save_quick_edit_fields'));
-    
+
     // Handle bulk status updates
     add_action('load-edit.php', array($this, 'handle_bulk_status_update'));
   }
@@ -71,14 +71,14 @@ class CustomPluginPostType
     // Remove date column temporarily
     $date = $columns['date'];
     unset($columns['date']);
-    
+
     // Add custom columns
     $columns['featured_image'] = __('Image', 'custom-plugin');
     $columns['product_price'] = __('Harga', 'custom-plugin');
-    
+
     // Add date back at the end
     $columns['date'] = $date;
-    
+
     return $columns;
   }
 
@@ -96,7 +96,7 @@ class CustomPluginPostType
           echo '<span style="color: #999; font-style: italic;">' . __('No image', 'custom-plugin') . '</span>';
         }
         break;
-        
+
       case 'product_price':
         $harga = get_post_meta($post_id, '_custom_product_harga', true);
         if ($harga) {
@@ -125,13 +125,13 @@ class CustomPluginPostType
     // Remove date column temporarily
     $date = $columns['date'];
     unset($columns['date']);
-    
+
     // Add custom columns
     $columns['order_status'] = __('Status', 'custom-plugin');
-    
+
     // Add date back at the end
     $columns['date'] = $date;
-    
+
     return $columns;
   }
 
@@ -144,7 +144,7 @@ class CustomPluginPostType
       case 'order_status':
         $status = get_post_meta($post_id, '_custom_order_status', true);
         $status = $status ? $status : 'pending';
-        
+
         // Define status labels and colors
         $status_config = array(
           'pending' => array('label' => __('Pending', 'custom-plugin'), 'color' => '#f57c00'),
@@ -153,7 +153,7 @@ class CustomPluginPostType
           'delivered' => array('label' => __('Delivered', 'custom-plugin'), 'color' => '#388e3c'),
           'cancelled' => array('label' => __('Cancelled', 'custom-plugin'), 'color' => '#d32f2f')
         );
-        
+
         if (isset($status_config[$status])) {
           $config = $status_config[$status];
           echo '<span style="color: ' . $config['color'] . '; font-weight: bold; padding: 4px 8px; border-radius: 3px; background: rgba(' . $this->hex_to_rgb($config['color']) . ', 0.1);">';
@@ -220,7 +220,7 @@ class CustomPluginPostType
     }
 
     $post_id = (int) $_POST['post_ID'];
-    
+
     // Check permissions
     if (!current_user_can('edit_post', $post_id)) {
       wp_die(__('You do not have permission to edit this post', 'custom-plugin'));
@@ -276,7 +276,7 @@ class CustomPluginPostType
     $updated = 0;
     foreach ($post_ids as $post_id) {
       $post_id = (int) $post_id;
-      
+
       // Check permissions
       if (!current_user_can('edit_post', $post_id)) {
         continue;
