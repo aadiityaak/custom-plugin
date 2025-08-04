@@ -1,0 +1,114 @@
+/* Custom Plugin Meta Box Styles */
+
+.custom-plugin-meta-box {
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+}
+
+.custom-plugin-meta-box .form-table {
+  margin: 0;
+}
+
+.custom-plugin-meta-box .form-table th {
+  width: 150px;
+  padding: 15px;
+  background: #f9f9f9;
+  border-right: 1px solid #e5e5e5;
+  font-weight: 600;
+}
+
+.custom-plugin-meta-box .form-table td {
+  padding: 15px;
+}
+
+.custom-plugin-meta-box input[type="number"],
+.custom-plugin-meta-box select {
+  width: 100%;
+  max-width: 300px;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.custom-plugin-meta-box input[type="number"]:focus,
+.custom-plugin-meta-box select:focus {
+  border-color: #0073aa;
+  box-shadow: 0 0 0 1px #0073aa;
+  outline: none;
+}
+
+.custom-plugin-meta-box .description {
+  margin-top: 5px !important;
+  font-style: italic;
+  color: #666;
+  font-size: 13px;
+}
+
+/* Price formatting */
+.custom-plugin-meta-box .price-input {
+  position: relative;
+}
+
+.custom-plugin-meta-box .price-input::before {
+  content: "Rp ";
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #666;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.custom-plugin-meta-box .price-input input {
+  padding-left: 35px;
+}
+
+/* Status select styling */
+.custom-plugin-meta-box select option {
+  padding: 5px;
+}
+
+.custom-plugin-meta-box select option[value="pending"] {
+  color: #f57c00;
+}
+
+.custom-plugin-meta-box select option[value="processing"] {
+  color: #1976d2;
+}
+
+.custom-plugin-meta-box select option[value="shipped"] {
+  color: #7b1fa2;
+}
+
+.custom-plugin-meta-box select option[value="delivered"] {
+  color: #388e3c;
+}
+
+.custom-plugin-meta-box select option[value="cancelled"] {
+  color: #d32f2f;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .custom-plugin-meta-box .form-table th,
+  .custom-plugin-meta-box .form-table td {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    border: none;
+  }
+
+  .custom-plugin-meta-box .form-table th {
+    background: none;
+    font-weight: bold;
+    padding-bottom: 5px;
+  }
+
+  .custom-plugin-meta-box input[type="number"],
+  .custom-plugin-meta-box select {
+    max-width: 100%;
+  }
+}

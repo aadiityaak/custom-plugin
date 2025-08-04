@@ -78,6 +78,8 @@ class CustomPlugin
     // require_once CUSTOM_PLUGIN_PLUGIN_DIR . 'includes/class-admin.php';
     // require_once CUSTOM_PLUGIN_PLUGIN_DIR . 'includes/class-frontend.php';
     require_once CUSTOM_PLUGIN_PLUGIN_DIR . 'includes/class-shortcodes.php';
+    require_once CUSTOM_PLUGIN_PLUGIN_DIR . 'includes/class-post-type.php';
+    require_once CUSTOM_PLUGIN_PLUGIN_DIR . 'includes/class-meta-box.php';
   }
 
   /**
@@ -179,6 +181,7 @@ class CustomPlugin
    */
   public function admin_scripts($hook)
   {
+    // Load on plugin admin pages
     if (strpos($hook, 'custom-plugin') !== false) {
       wp_enqueue_style('custom-plugin-admin', CUSTOM_PLUGIN_PLUGIN_URL . 'assets/css/admin.css', array(), CUSTOM_PLUGIN_VERSION);
       wp_enqueue_script('custom-plugin-admin', CUSTOM_PLUGIN_PLUGIN_URL . 'assets/js/admin.js', array('jquery'), CUSTOM_PLUGIN_VERSION, true);
@@ -187,6 +190,19 @@ class CustomPlugin
         'ajax_url' => admin_url('admin-ajax.php'),
         'nonce' => wp_create_nonce('custom_plugin_nonce')
       ));
+    }
+
+    // Load on custom post type list pages
+    if (in_array($hook, array('edit.php')) && isset($_GET['post_type']) && in_array($_GET['post_type'], array('custom_product', 'custom_order'))) {
+      wp_enqueue_style('custom-plugin-admin', CUSTOM_PLUGIN_PLUGIN_URL . 'assets/css/admin.css', array(), CUSTOM_PLUGIN_VERSION);
+      wp_enqueue_script('custom-plugin-list-table', CUSTOM_PLUGIN_PLUGIN_URL . 'assets/js/list-table.js', array('jquery', 'inline-edit-post'), CUSTOM_PLUGIN_VERSION, true);
+    }
+
+    // Load on post edit pages for custom post types
+    global $post_type;
+    if (in_array($post_type, array('custom_product', 'custom_order'))) {
+      wp_enqueue_style('custom-plugin-meta-box', CUSTOM_PLUGIN_PLUGIN_URL . 'assets/css/meta-box.css', array(), CUSTOM_PLUGIN_VERSION);
+      wp_enqueue_script('custom-plugin-meta-box', CUSTOM_PLUGIN_PLUGIN_URL . 'assets/js/meta-box.js', array('jquery'), CUSTOM_PLUGIN_VERSION, true);
     }
   }
 
