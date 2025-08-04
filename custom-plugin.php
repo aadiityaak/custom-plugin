@@ -75,8 +75,6 @@ class CustomPlugin
    */
   private function includes()
   {
-    // require_once CUSTOM_PLUGIN_PLUGIN_DIR . 'includes/class-admin.php';
-    // require_once CUSTOM_PLUGIN_PLUGIN_DIR . 'includes/class-frontend.php';
     require_once CUSTOM_PLUGIN_PLUGIN_DIR . 'includes/class-shortcodes.php';
     require_once CUSTOM_PLUGIN_PLUGIN_DIR . 'includes/class-post-type.php';
     require_once CUSTOM_PLUGIN_PLUGIN_DIR . 'includes/class-meta-box.php';

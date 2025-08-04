@@ -69,24 +69,42 @@ Akses pengaturan melalui **Custom Plugin > Settings** di admin dashboard:
 
 ```
 custom-plugin/
-├── custom-plugin.php          # File utama plugin
-├── admin/
-│   ├── admin-page.php        # Template halaman admin utama
-│   └── settings-page.php     # Template halaman pengaturan
+├── custom-plugin.php                 # Main plugin file
 ├── includes/
-│   ├── class-admin.php       # Class untuk fungsi admin
-│   ├── class-frontend.php    # Class untuk fungsi frontend
-│   └── class-shortcodes.php  # Class untuk shortcodes
+│   ├── class-post-type.php          # Custom post types & admin columns
+│   ├── class-meta-box.php           # Meta boxes & timeline system
+│   ├── class-shortcodes.php         # Frontend shortcodes & AJAX handlers
+│   └── index.php                    # Security file
 ├── assets/
 │   ├── css/
-│   │   ├── admin.css         # Style untuk admin
-│   │   └── frontend.css      # Style untuk frontend
+│   │   ├── admin.css                # Admin styling
+│   │   ├── frontend.css             # Basic frontend styles
+│   │   ├── meta-box.css            # Meta box specific styles
+│   │   └── shortcode.css           # Shortcode & tracking styles
 │   └── js/
-│       ├── admin.js          # JavaScript untuk admin
-│       └── frontend.js       # JavaScript untuk frontend
-├── languages/                # File terjemahan
-└── README.md                # Dokumentasi ini
+│       ├── admin.js                 # Admin functionality
+│       ├── frontend.js              # Basic frontend JS
+│       ├── meta-box.js             # Timeline management
+│       ├── list-table.js           # Admin list tables
+│       ├── shortcode.js            # Order form functionality
+│       └── tracking.js             # Order tracking system
+├── admin/
+│   └── settings-page.php           # Plugin settings
+└── docs/
+    ├── ORDER_TRACKING_SHORTCODE.md # Tracking documentation
+    └── TESTING_GUIDE.md            # Testing instructions
 ```
+
+│ ├── css/
+│ │ ├── admin.css # Style untuk admin
+│ │ └── frontend.css # Style untuk frontend
+│ └── js/
+│ ├── admin.js # JavaScript untuk admin
+│ └── frontend.js # JavaScript untuk frontend
+├── languages/ # File terjemahan
+└── README.md # Dokumentasi ini
+
+````
 
 ## Tabel Database
 
@@ -101,7 +119,7 @@ CREATE TABLE wp_custom_plugin_data (
     created_at datetime DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id)
 );
-```
+````
 
 ## Hooks dan Filters
 

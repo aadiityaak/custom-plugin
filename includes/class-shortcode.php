@@ -14,6 +14,7 @@ class CustomPluginShortcode
     add_action('wp_ajax_submit_custom_order', array($this, 'handle_order_submission'));
     add_action('wp_ajax_nopriv_submit_custom_order', array($this, 'handle_order_submission'));
     add_action('wp_enqueue_scripts', array($this, 'enqueue_frontend_scripts'));
+    add_shortcode('harga', array($this, 'render_harga_shortcode'));
   }
 
   /**

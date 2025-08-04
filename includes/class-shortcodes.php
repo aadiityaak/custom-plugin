@@ -20,6 +20,7 @@ class Custom_Plugin_Shortcodes
     add_shortcode('header-search', array($this, 'custom_header_search_shortcode'));
     add_shortcode('custom_order_form', array($this, 'render_order_form'));
     add_shortcode('order_tracking', array($this, 'render_order_tracking'));
+    add_shortcode('harga', array($this, 'render_harga_shortcode'));
 
     // AJAX handlers
     add_action('wp_ajax_submit_custom_order', array($this, 'handle_order_submission'));
@@ -75,6 +76,21 @@ class Custom_Plugin_Shortcodes
     return false;
   }
 
+  public function render_harga_shortcode($atts)
+  {
+    global $post;
+
+    // Parse shortcode attributes
+    $atts = shortcode_atts(array(
+      'product_id' => $post->ID,
+    ), $atts, 'harga');
+
+    // Get product price
+    $price = get_post_meta($atts['product_id'], '_custom_product_harga', true);
+
+    // Return formatted price
+    return $price ? 'Rp ' . number_format($price, 0, ',', '.') : __('Harga tidak tersedia', 'custom-plugin');
+  }
   /**
    * Render order form shortcode
    */
