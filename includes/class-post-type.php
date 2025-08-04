@@ -12,6 +12,7 @@ class CustomPluginPostType
   public function __construct()
   {
     add_action('init', array($this, 'register_post_types'));
+    add_action('init', array($this, 'register_taxonomies'));
 
     // Add custom columns for products
     add_filter('manage_custom_product_posts_columns', array($this, 'add_product_columns'));
@@ -64,6 +65,53 @@ class CustomPluginPostType
   }
 
   /**
+   * Register custom taxonomies
+   */
+  public function register_taxonomies()
+  {
+    // Register Product Category taxonomy
+    register_taxonomy('category_product', 'custom_product', array(
+      'labels' => array(
+        'name' => __('Product Categories', 'custom-plugin'),
+        'singular_name' => __('Product Category', 'custom-plugin'),
+        'menu_name' => __('Categories', 'custom-plugin'),
+        'all_items' => __('All Categories', 'custom-plugin'),
+        'edit_item' => __('Edit Category', 'custom-plugin'),
+        'view_item' => __('View Category', 'custom-plugin'),
+        'update_item' => __('Update Category', 'custom-plugin'),
+        'add_new_item' => __('Add New Category', 'custom-plugin'),
+        'new_item_name' => __('New Category Name', 'custom-plugin'),
+        'parent_item' => __('Parent Category', 'custom-plugin'),
+        'parent_item_colon' => __('Parent Category:', 'custom-plugin'),
+        'search_items' => __('Search Categories', 'custom-plugin'),
+        'popular_items' => __('Popular Categories', 'custom-plugin'),
+        'separate_items_with_commas' => __('Separate categories with commas', 'custom-plugin'),
+        'add_or_remove_items' => __('Add or remove categories', 'custom-plugin'),
+        'choose_from_most_used' => __('Choose from the most used categories', 'custom-plugin'),
+        'not_found' => __('No categories found', 'custom-plugin'),
+      ),
+      'public' => true,
+      'hierarchical' => true,
+      'show_ui' => true,
+      'show_admin_column' => true,
+      'show_in_nav_menus' => true,
+      'show_tagcloud' => true,
+      'show_in_rest' => true,
+      'rewrite' => array(
+        'slug' => 'product-category',
+        'with_front' => false,
+        'hierarchical' => true,
+      ),
+      'capabilities' => array(
+        'manage_terms' => 'manage_categories',
+        'edit_terms' => 'manage_categories',
+        'delete_terms' => 'manage_categories',
+        'assign_terms' => 'edit_posts',
+      ),
+    ));
+  }
+
+  /**
    * Add custom columns for Products
    */
   public function add_product_columns($columns)
@@ -74,6 +122,7 @@ class CustomPluginPostType
 
     // Add custom columns
     $columns['featured_image'] = __('Image', 'custom-plugin');
+    $columns['product_category'] = __('Category', 'custom-plugin');
     $columns['product_price'] = __('Harga', 'custom-plugin');
 
     // Add date back at the end
@@ -97,6 +146,19 @@ class CustomPluginPostType
         }
         break;
 
+      case 'product_category':
+        $categories = get_the_terms($post_id, 'category_product');
+        if ($categories && !is_wp_error($categories)) {
+          $category_names = array();
+          foreach ($categories as $category) {
+            $category_names[] = '<a href="' . admin_url('edit.php?post_type=custom_product&category_product=' . $category->slug) . '">' . esc_html($category->name) . '</a>';
+          }
+          echo implode(', ', $category_names);
+        } else {
+          echo '<span style="color: #999; font-style: italic;">' . __('No category', 'custom-plugin') . '</span>';
+        }
+        break;
+
       case 'product_price':
         $harga = get_post_meta($post_id, '_custom_product_harga', true);
         if ($harga) {
@@ -114,6 +176,7 @@ class CustomPluginPostType
   public function make_product_columns_sortable($columns)
   {
     $columns['product_price'] = 'product_price';
+    $columns['product_category'] = 'category_product';
     return $columns;
   }
 
@@ -194,6 +257,17 @@ class CustomPluginPostType
     if ($orderby === 'order_status') {
       $query->set('meta_key', '_custom_order_status');
       $query->set('orderby', 'meta_value');
+    }
+
+    if ($orderby === 'category_product') {
+      $query->set('orderby', 'taxonomy');
+      $query->set('tax_query', array(
+        array(
+          'taxonomy' => 'category_product',
+          'field' => 'slug',
+          'terms' => array(), // Will be populated by WordPress
+        )
+      ));
     }
   }
 

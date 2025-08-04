@@ -21,6 +21,7 @@ class Custom_Plugin_Shortcodes
     add_shortcode('custom_order_form', array($this, 'render_order_form'));
     add_shortcode('order_tracking', array($this, 'render_order_tracking'));
     add_shortcode('harga', array($this, 'render_harga_shortcode'));
+    add_shortcode('product_categories', array($this, 'render_product_categories'));
 
     // AJAX handlers
     add_action('wp_ajax_submit_custom_order', array($this, 'handle_order_submission'));
@@ -91,6 +92,100 @@ class Custom_Plugin_Shortcodes
     // Return formatted price
     return $price ? 'Rp ' . number_format($price, 0, ',', '.') : __('Harga tidak tersedia', 'custom-plugin');
   }
+
+  /**
+   * Render product categories shortcode
+   */
+  public function render_product_categories($atts)
+  {
+    // Parse shortcode attributes
+    $atts = shortcode_atts(array(
+      'show_count' => 'no',
+      'hide_empty' => 'yes',
+      'orderby' => 'name',
+      'order' => 'ASC',
+      'limit' => 0,
+      'class' => '',
+      'style' => 'list' // list, grid, dropdown
+    ), $atts, 'product_categories');
+
+    // Get categories
+    $args = array(
+      'taxonomy' => 'category_product',
+      'orderby' => $atts['orderby'],
+      'order' => $atts['order'],
+      'hide_empty' => $atts['hide_empty'] === 'yes',
+      'number' => $atts['limit'] > 0 ? $atts['limit'] : '',
+    );
+
+    $categories = get_terms($args);
+
+    if (empty($categories) || is_wp_error($categories)) {
+      return '<p>' . __('No categories found.', 'custom-plugin') . '</p>';
+    }
+
+    // Start output buffering
+    ob_start();
+
+    if ($atts['style'] === 'dropdown') {
+      // Dropdown style
+?>
+      <div class="product-categories-dropdown <?php echo esc_attr($atts['class']); ?>">
+        <select onchange="window.location.href=this.value">
+          <option value=""><?php _e('Select Category', 'custom-plugin'); ?></option>
+          <?php foreach ($categories as $category): ?>
+            <option value="<?php echo get_term_link($category); ?>">
+              <?php echo esc_html($category->name); ?>
+              <?php if ($atts['show_count'] === 'yes'): ?>
+                (<?php echo $category->count; ?>)
+              <?php endif; ?>
+            </option>
+          <?php endforeach; ?>
+        </select>
+      </div>
+    <?php
+    } elseif ($atts['style'] === 'grid') {
+      // Grid style
+    ?>
+      <div class="product-categories-grid <?php echo esc_attr($atts['class']); ?>">
+        <?php foreach ($categories as $category): ?>
+          <div class="category-item">
+            <a href="<?php echo get_term_link($category); ?>" class="category-link">
+              <h4><?php echo esc_html($category->name); ?></h4>
+              <?php if ($category->description): ?>
+                <p><?php echo esc_html($category->description); ?></p>
+              <?php endif; ?>
+              <?php if ($atts['show_count'] === 'yes'): ?>
+                <span class="category-count"><?php echo $category->count; ?> <?php _e('products', 'custom-plugin'); ?></span>
+              <?php endif; ?>
+            </a>
+          </div>
+        <?php endforeach; ?>
+      </div>
+    <?php
+    } else {
+      // List style (default)
+    ?>
+      <div class="product-categories-list <?php echo esc_attr($atts['class']); ?>">
+        <ul>
+          <?php foreach ($categories as $category): ?>
+            <li>
+              <a href="<?php echo get_term_link($category); ?>">
+                <?php echo esc_html($category->name); ?>
+                <?php if ($atts['show_count'] === 'yes'): ?>
+                  <span class="count">(<?php echo $category->count; ?>)</span>
+                <?php endif; ?>
+              </a>
+            </li>
+          <?php endforeach; ?>
+        </ul>
+      </div>
+    <?php
+    }
+
+    return ob_get_clean();
+  }
+
   /**
    * Render order form shortcode
    */
@@ -121,7 +216,7 @@ class Custom_Plugin_Shortcodes
 
     // Start output buffering
     ob_start();
-?>
+    ?>
     <div class="custom-order-form-container <?php echo esc_attr($atts['class']); ?>">
       <form id="custom-order-form" class="custom-order-form" method="post">
         <?php wp_nonce_field('custom_order_nonce', 'custom_order_nonce_field'); ?>
@@ -671,6 +766,16 @@ class Custom_Plugin_Shortcodes
                 <?php endif; ?>
                 <div class="product-content">
                   <h4><a href="<?php echo get_permalink($product->ID); ?>"><?php echo esc_html($product->post_title); ?></a></h4>
+                  <?php
+                  // Display categories
+                  $categories = get_the_terms($product->ID, 'category_product');
+                  if ($categories && !is_wp_error($categories)): ?>
+                    <p class="product-categories">
+                      <?php foreach ($categories as $category): ?>
+                        <span class="category-tag"><?php echo esc_html($category->name); ?></span>
+                      <?php endforeach; ?>
+                    </p>
+                  <?php endif; ?>
                   <?php if ($price): ?>
                     <p class="product-price">Rp <?php echo number_format($price, 0, ',', '.'); ?></p>
                   <?php endif; ?>
