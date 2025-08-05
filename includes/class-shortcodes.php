@@ -22,6 +22,7 @@ class Custom_Plugin_Shortcodes
     add_shortcode('order_tracking', array($this, 'render_order_tracking'));
     add_shortcode('harga', array($this, 'render_harga_shortcode'));
     add_shortcode('product_categories', array($this, 'render_product_categories'));
+    add_shortcode('categories_with_images', array($this, 'render_categories_with_images'));
 
     // AJAX handlers
     add_action('wp_ajax_submit_custom_order', array($this, 'handle_order_submission'));
@@ -824,11 +825,127 @@ class Custom_Plugin_Shortcodes
             <?php endforeach; ?>
           </div>
         </div>
-<?php
+    <?php
       else:
         echo '<p>' . __('No orders found.', 'custom-plugin') . '</p>';
       endif;
     }
+
+    return ob_get_clean();
+  }
+
+  /**
+   * Render categories with images shortcode
+   * Uses Categories Images plugin to display category images
+   */
+  public function render_categories_with_images($atts)
+  {
+    // Parse shortcode attributes
+    $atts = shortcode_atts(array(
+      'taxonomy' => 'category_product',
+      'show_count' => 'no',
+      'show_description' => 'yes',
+      'hide_empty' => 'yes',
+      'orderby' => 'name',
+      'order' => 'ASC',
+      'limit' => 0,
+      'class' => '',
+      'style' => 'grid', // grid, list
+      'image_size' => 'medium',
+      'columns' => 3
+    ), $atts, 'categories_with_images');
+
+    // Get categories
+    $args = array(
+      'taxonomy' => $atts['taxonomy'],
+      'orderby' => $atts['orderby'],
+      'order' => $atts['order'],
+      'hide_empty' => $atts['hide_empty'] === 'yes',
+      'number' => $atts['limit'] > 0 ? $atts['limit'] : '',
+    );
+
+    $categories = get_terms($args);
+
+    if (empty($categories) || is_wp_error($categories)) {
+      return '<p>' . __('No categories found.', 'custom-plugin') . '</p>';
+    }
+
+    // Start output buffering
+    ob_start();
+
+    $container_class = 'categories-with-images ' . $atts['style'] . '-style';
+    if (!empty($atts['class'])) {
+      $container_class .= ' ' . esc_attr($atts['class']);
+    }
+    if ($atts['style'] === 'grid') {
+      $container_class .= ' columns-' . intval($atts['columns']);
+    }
+    ?>
+    <div class="<?php echo esc_attr($container_class); ?> row">
+      <?php foreach ($categories as $category):
+        // Get category image using Categories Images plugin
+        $image_id = '';
+        $image_url = '';
+
+        // Check if Categories Images plugin functions exist
+        if (function_exists('z_taxonomy_image_url')) {
+          $image_url = z_taxonomy_image_url($category->term_id, $atts['image_size']);
+        } elseif (function_exists('get_term_meta')) {
+          // Alternative method - check for common meta keys used by category image plugins
+          $image_id = get_term_meta($category->term_id, 'category-image-id', true);
+          if (!$image_id) {
+            $image_id = get_term_meta($category->term_id, 'thumbnail_id', true);
+          }
+          if ($image_id) {
+            $image_url = wp_get_attachment_image_url($image_id, $atts['image_size']);
+          }
+        }
+
+        $category_link = get_term_link($category);
+      ?>
+        <div class="category-item col-md-4">
+          <a href="<?php echo esc_url($category_link); ?>" class="category-link">
+            <?php if ($image_url): ?>
+              <div class="category-image">
+                <img src="<?php echo esc_url($image_url); ?>"
+                  alt="<?php echo esc_attr($category->name); ?>"
+                  loading="lazy">
+              </div>
+            <?php else: ?>
+              <div class="category-image placeholder">
+                <div class="placeholder-icon">
+                  <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                    <circle cx="8.5" cy="8.5" r="1.5" />
+                    <polyline points="21,15 16,10 5,21" />
+                  </svg>
+                </div>
+              </div>
+            <?php endif; ?>
+
+            <div class="category-content">
+              <h3 class="category-title"><?php echo esc_html($category->name); ?></h3>
+
+              <?php if ($atts['show_description'] === 'yes' && !empty($category->description)): ?>
+                <p class="category-description"><?php echo esc_html($category->description); ?></p>
+              <?php endif; ?>
+
+              <?php if ($atts['show_count'] === 'yes'): ?>
+                <span class="category-count">
+                  <?php
+                  printf(
+                    _n('%d item', '%d items', $category->count, 'custom-plugin'),
+                    $category->count
+                  );
+                  ?>
+                </span>
+              <?php endif; ?>
+            </div>
+          </a>
+        </div>
+      <?php endforeach; ?>
+    </div>
+<?php
 
     return ob_get_clean();
   }
