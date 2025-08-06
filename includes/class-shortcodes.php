@@ -638,7 +638,7 @@ class Custom_Plugin_Shortcodes
   public function custom_header_search_shortcode($atts)
   {
     $atts = shortcode_atts(array(
-      'placeholder' => __('Search...', 'custom-plugin'),
+      'placeholder' => __('Search', 'custom-plugin'),
       'button_text' => __('Search', 'custom-plugin')
     ), $atts, 'header-search');
 
