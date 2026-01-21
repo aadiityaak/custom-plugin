@@ -51,6 +51,7 @@ class Frontend
         return $content;
     }
 
+    /*
     public static function display_form()
     {
         ob_start();
@@ -172,5 +173,10 @@ class Frontend
         </script>
 <?php
         return ob_get_clean();
+    }
+    */
+    public static function display_form()
+    {
+        return '';
     }
 }

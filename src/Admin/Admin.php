@@ -33,6 +33,7 @@ class Admin
             30
         );
 
+        /*
         add_submenu_page(
             'custom-plugin',
             __('Form Submissions', 'custom-plugin'),
@@ -41,6 +42,7 @@ class Admin
             'custom-plugin-submissions',
             array($this, 'submissions_page')
         );
+        */
 
         add_submenu_page(
             'custom-plugin',

@@ -43,7 +43,7 @@ class Plugin
     new Frontend();
     new Shortcode();
     new SettingsController();
-    new ContactController();
+    // new ContactController();
     new PostTypes();
     new Taxonomies();
     new CoreFeatures();

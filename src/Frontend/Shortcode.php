@@ -11,7 +11,7 @@ class Shortcode
 
     public function __construct()
     {
-        add_shortcode('custom_form', array($this, 'custom_form_shortcode'));
+        // add_shortcode('custom_form', array($this, 'custom_form_shortcode'));
         add_shortcode('custom_message', array($this, 'custom_message_shortcode'));
         add_shortcode('custom_data', array($this, 'custom_data_shortcode'));
     }
