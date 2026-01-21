@@ -57,7 +57,6 @@ class Frontend
 ?>
         <div class="custom-plugin-wrapper" style="font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
             <div x-data="contactForm()" class="bg-white rounded-xl shadow-lg p-8 max-w-lg mx-auto border border-gray-100">
-                <h3 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-4"><?php _e('Contact Us', 'custom-plugin'); ?></h3>
 
                 <!-- Notifications -->
                 <div x-show="success" x-transition class="bg-green-50 border-l-4 border-green-500 p-4 mb-6 rounded">
@@ -107,7 +106,7 @@ class Frontend
 
                     <div>
                         <button type="submit" :disabled="loading"
-                            class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition duration-150 ease-in-out">
+                            class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition duration-150 ease-in-out" style="color: white;">
                             <svg x-show="loading" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>

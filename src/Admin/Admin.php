@@ -35,6 +35,15 @@ class Admin
 
         add_submenu_page(
             'custom-plugin',
+            __('Form Submissions', 'custom-plugin'),
+            __('Submissions', 'custom-plugin'),
+            'manage_options',
+            'custom-plugin-submissions',
+            array($this, 'submissions_page')
+        );
+
+        add_submenu_page(
+            'custom-plugin',
             __('Settings', 'custom-plugin'),
             __('Settings', 'custom-plugin'),
             'manage_options',
@@ -46,6 +55,11 @@ class Admin
     public function admin_page()
     {
         include CUSTOM_PLUGIN_DIR . 'templates/admin/admin-page.php';
+    }
+
+    public function submissions_page()
+    {
+        include CUSTOM_PLUGIN_DIR . 'templates/admin/submissions-page.php';
     }
 
     public function settings_page()

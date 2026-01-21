@@ -6,24 +6,27 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-class Shortcode {
+class Shortcode
+{
 
-    public function __construct() {
+    public function __construct()
+    {
         add_shortcode('custom_form', array($this, 'custom_form_shortcode'));
         add_shortcode('custom_message', array($this, 'custom_message_shortcode'));
         add_shortcode('custom_data', array($this, 'custom_data_shortcode'));
     }
 
-    public function custom_form_shortcode($atts) {
+    public function custom_form_shortcode($atts)
+    {
         $atts = shortcode_atts(array(
-            'title' => __('Contact Form', 'custom-plugin'),
             'button_text' => __('Submit', 'custom-plugin')
         ), $atts, 'custom_form');
 
         return Frontend::display_form();
     }
 
-    public function custom_message_shortcode($atts) {
+    public function custom_message_shortcode($atts)
+    {
         $atts = shortcode_atts(array(
             'text' => __('Hello World!', 'custom-plugin'),
             'style' => 'default'
@@ -33,7 +36,8 @@ class Shortcode {
         return '<div class="' . esc_attr($class) . '">' . esc_html($atts['text']) . '</div>';
     }
 
-    public function custom_data_shortcode($atts) {
+    public function custom_data_shortcode($atts)
+    {
         $atts = shortcode_atts(array(
             'limit' => 10,
             'orderby' => 'created_at',
@@ -59,7 +63,7 @@ class Shortcode {
         }
 
         ob_start();
-        ?>
+?>
         <div class="custom-plugin-data">
             <h3><?php _e('Latest Submissions', 'custom-plugin'); ?></h3>
             <table class="custom-plugin-table">
@@ -83,7 +87,7 @@ class Shortcode {
                 </tbody>
             </table>
         </div>
-        <?php
+<?php
         return ob_get_clean();
     }
 }
