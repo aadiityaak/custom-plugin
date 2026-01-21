@@ -5,6 +5,7 @@ namespace CustomPlugin\Core;
 use CustomPlugin\Admin\Admin;
 use CustomPlugin\Frontend\Frontend;
 use CustomPlugin\Frontend\Shortcode;
+use CustomPlugin\Api\SettingsController;
 
 if (!defined('ABSPATH')) {
   exit;
@@ -37,6 +38,7 @@ class Plugin
     new Admin();
     new Frontend();
     new Shortcode();
+    new SettingsController();
   }
 
   public function activate()

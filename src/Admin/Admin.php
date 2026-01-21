@@ -6,20 +6,24 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-class Admin {
+class Admin
+{
 
-    public function __construct() {
+    public function __construct()
+    {
         add_action('admin_menu', array($this, 'add_admin_menu'));
         add_action('admin_enqueue_scripts', array($this, 'enqueue_scripts'));
         add_action('admin_init', array($this, 'init'));
         add_action('wp_ajax_custom_plugin_save_data', array($this, 'save_data'));
     }
 
-    public function init() {
+    public function init()
+    {
         register_setting('custom_plugin_settings', 'custom_plugin_settings');
     }
 
-    public function add_admin_menu() {
+    public function add_admin_menu()
+    {
         add_menu_page(
             __('Custom Plugin', 'custom-plugin'),
             __('Custom Plugin', 'custom-plugin'),
@@ -40,27 +44,36 @@ class Admin {
         );
     }
 
-    public function admin_page() {
+    public function admin_page()
+    {
         include CUSTOM_PLUGIN_DIR . 'templates/admin/admin-page.php';
     }
 
-    public function settings_page() {
+    public function settings_page()
+    {
         include CUSTOM_PLUGIN_DIR . 'templates/admin/settings-page.php';
     }
 
-    public function enqueue_scripts($hook) {
+    public function enqueue_scripts($hook)
+    {
         if (strpos($hook, 'custom-plugin') !== false) {
-            wp_enqueue_style('custom-plugin-admin', CUSTOM_PLUGIN_URL . 'assets/admin/css/admin.css', array(), CUSTOM_PLUGIN_VERSION);
-            wp_enqueue_script('custom-plugin-admin', CUSTOM_PLUGIN_URL . 'assets/admin/js/admin.js', array('jquery'), CUSTOM_PLUGIN_VERSION, true);
+            // Enqueue Alpine.js
+            wp_enqueue_script('alpinejs', 'https://unpkg.com/alpinejs@3.13.3/dist/cdn.min.js', array(), '3.13.3', true);
 
-            wp_localize_script('custom-plugin-admin', 'customPluginAjax', array(
-                'ajax_url' => admin_url('admin-ajax.php'),
-                'nonce' => wp_create_nonce('custom_plugin_nonce')
+            wp_enqueue_style('custom-plugin-admin', CUSTOM_PLUGIN_URL . 'assets/admin/css/admin.css', array(), CUSTOM_PLUGIN_VERSION);
+            wp_enqueue_script('custom-plugin-admin', CUSTOM_PLUGIN_URL . 'assets/admin/js/admin.js', array('jquery', 'alpinejs'), CUSTOM_PLUGIN_VERSION, true);
+
+            wp_localize_script('custom-plugin-admin', 'customPluginData', array(
+                'root' => esc_url_raw(rest_url()),
+                'nonce' => wp_create_nonce('wp_rest'),
+                'ajax_url' => admin_url('admin-ajax.php'), // Keep for existing functionality if needed
+                'ajax_nonce' => wp_create_nonce('custom_plugin_nonce')
             ));
         }
     }
 
-    public function save_data() {
+    public function save_data()
+    {
         if (!wp_verify_nonce($_POST['nonce'], 'custom_plugin_nonce')) {
             wp_die(__('Security check failed', 'custom-plugin'));
         }
@@ -93,7 +106,8 @@ class Admin {
         }
     }
 
-    public static function get_all_data() {
+    public static function get_all_data()
+    {
         global $wpdb;
         $table_name = $wpdb->prefix . 'custom_plugin_data';
         return $wpdb->get_results("SELECT * FROM $table_name ORDER BY created_at DESC");
