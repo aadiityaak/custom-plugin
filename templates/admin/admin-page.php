@@ -10,7 +10,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Get data from database
-$data = Custom_Plugin_Admin::get_all_data();
+$data = \CustomPlugin\Admin\Admin::get_all_data();
 ?>
 
 <div class="wrap">
