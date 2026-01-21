@@ -78,24 +78,103 @@ if (!defined('ABSPATH')) {
       </form>
     </div>
 
-    <!-- Info Card -->
-    <div class="bg-white rounded-lg shadow-md p-6">
-      <h2 class="text-xl font-semibold mb-4 border-b pb-2 text-gray-800"><?php _e('Plugin Information', 'custom-plugin'); ?></h2>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div class="p-4 bg-gray-50 rounded-lg">
-          <p class="text-sm text-gray-500 uppercase tracking-wider"><?php _e('Version', 'custom-plugin'); ?></p>
-          <p class="text-lg font-bold text-gray-900"><?php echo CUSTOM_PLUGIN_VERSION; ?></p>
-        </div>
-        <div class="p-4 bg-gray-50 rounded-lg">
-          <p class="text-sm text-gray-500 uppercase tracking-wider"><?php _e('WordPress', 'custom-plugin'); ?></p>
-          <p class="text-lg font-bold text-gray-900"><?php echo get_bloginfo('version'); ?></p>
-        </div>
-        <div class="p-4 bg-gray-50 rounded-lg">
-          <p class="text-sm text-gray-500 uppercase tracking-wider"><?php _e('PHP', 'custom-plugin'); ?></p>
-          <p class="text-lg font-bold text-gray-900"><?php echo PHP_VERSION; ?></p>
-        </div>
-      </div>
-    </div>
+    <!-- Plugin Information Card removed as per request -->
+
 
   </div>
 </div>
+
+<script>
+  document.addEventListener('alpine:init', () => {
+    Alpine.data('customPluginSettings', () => ({
+      loading: true,
+      saving: false,
+      settings: {
+        enable_feature_1: false,
+        enable_feature_2: false,
+        custom_message: ''
+      },
+      notification: {
+        show: false,
+        type: 'success',
+        message: ''
+      },
+
+      // Inline data from PHP
+      customPluginData: {
+        root: '<?php echo esc_url_raw(rest_url()); ?>',
+        nonce: '<?php echo wp_create_nonce('wp_rest'); ?>',
+        ajax_url: '<?php echo admin_url('admin-ajax.php'); ?>',
+        ajax_nonce: '<?php echo wp_create_nonce('custom_plugin_nonce'); ?>'
+      },
+
+      init() {
+        console.log('Component initialized');
+        this.fetchSettings();
+      },
+
+      fetchSettings() {
+        this.loading = true;
+
+        fetch(`${this.customPluginData.root}custom-plugin/v1/settings`, {
+            method: 'GET',
+            headers: {
+              'X-WP-Nonce': this.customPluginData.nonce
+            }
+          })
+          .then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.json();
+          })
+          .then(data => {
+            this.settings = {
+              ...this.settings,
+              ...data
+            };
+            this.loading = false;
+          })
+          .catch(error => {
+            console.error('Error fetching settings:', error);
+            this.showNotification('error', 'Failed to load settings.');
+            this.loading = false;
+          });
+      },
+
+      saveSettings() {
+        this.saving = true;
+        fetch(`${this.customPluginData.root}custom-plugin/v1/settings`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-WP-Nonce': this.customPluginData.nonce
+            },
+            body: JSON.stringify(this.settings)
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              this.showNotification('success', data.message || 'Settings saved.');
+            } else {
+              this.showNotification('error', data.message || 'Something went wrong.');
+            }
+            this.saving = false;
+          })
+          .catch(error => {
+            console.error('Error saving settings:', error);
+            this.showNotification('error', 'Failed to save settings.');
+            this.saving = false;
+          });
+      },
+
+      showNotification(type, message) {
+        this.notification.type = type;
+        this.notification.message = message;
+        this.notification.show = true;
+
+        setTimeout(() => {
+          this.notification.show = false;
+        }, 3000);
+      }
+    }));
+  });
+</script>

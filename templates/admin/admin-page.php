@@ -9,74 +9,58 @@ if (!defined('ABSPATH')) {
   exit;
 }
 
-// Get data from database
-$data = \CustomPlugin\Admin\Admin::get_all_data();
 ?>
 
 <div class="wrap">
-  <h1><?php echo esc_html(get_admin_page_title()); ?></h1>
+  <h1 class="wp-heading-inline mb-6"><?php echo esc_html(get_admin_page_title()); ?></h1>
 
-  <div class="custom-plugin-admin">
-    <div class="postbox">
-      <h2 class="hndle"><span><?php _e('Overview', 'custom-plugin'); ?></span></h2>
-      <div class="inside">
-        <p><?php _e('Welcome to Custom Plugin admin area. Here you can manage your plugin settings and view submitted data.', 'custom-plugin'); ?></p>
+  <div class="custom-plugin-container max-w-4xl mt-5">
 
-        <div class="custom-plugin-stats">
-          <div class="stat-box">
-            <h3><?php echo count($data); ?></h3>
-            <p><?php _e('Total Submissions', 'custom-plugin'); ?></p>
-          </div>
-          <div class="stat-box">
-            <h3><?php echo CUSTOM_PLUGIN_VERSION; ?></h3>
-            <p><?php _e('Plugin Version', 'custom-plugin'); ?></p>
-          </div>
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+      <h2 class="text-xl font-semibold mb-4 border-b pb-2 text-gray-800"><?php _e('System Information', 'custom-plugin'); ?></h2>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        <!-- PHP Version -->
+        <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+          <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wider mb-1"><?php _e('PHP Version', 'custom-plugin'); ?></h3>
+          <p class="text-2xl font-bold text-gray-800"><?php echo PHP_VERSION; ?></p>
+        </div>
+
+        <!-- WordPress Version -->
+        <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+          <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wider mb-1"><?php _e('WordPress Version', 'custom-plugin'); ?></h3>
+          <p class="text-2xl font-bold text-gray-800"><?php echo get_bloginfo('version'); ?></p>
+        </div>
+
+        <!-- Server Software -->
+        <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+          <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wider mb-1"><?php _e('Server Software', 'custom-plugin'); ?></h3>
+          <p class="text-lg font-medium text-gray-800"><?php echo esc_html($_SERVER['SERVER_SOFTWARE']); ?></p>
+        </div>
+
+        <!-- User Agent -->
+        <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+          <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wider mb-1"><?php _e('User Agent', 'custom-plugin'); ?></h3>
+          <p class="text-sm text-gray-600"><?php echo esc_html($_SERVER['HTTP_USER_AGENT']); ?></p>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-md p-6">
+      <h2 class="text-xl font-semibold mb-4 border-b pb-2 text-gray-800"><?php _e('Database Information', 'custom-plugin'); ?></h2>
+      <div class="grid grid-cols-1 gap-4">
+        <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+          <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wider mb-1"><?php _e('Database Path', 'custom-plugin'); ?></h3>
+          <p class="text-sm font-mono text-gray-700 break-all"><?php echo DB_HOST; ?></p>
+        </div>
+        <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+          <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wider mb-1"><?php _e('Database Name', 'custom-plugin'); ?></h3>
+          <p class="text-lg font-bold text-gray-800"><?php echo DB_NAME; ?></p>
         </div>
       </div>
     </div>
 
-    <div class="postbox">
-      <h2 class="hndle"><span><?php _e('Recent Submissions', 'custom-plugin'); ?></span></h2>
-      <div class="inside">
-        <?php if (!empty($data)): ?>
-          <table class="wp-list-table widefat fixed striped">
-            <thead>
-              <tr>
-                <th><?php _e('ID', 'custom-plugin'); ?></th>
-                <th><?php _e('Name', 'custom-plugin'); ?></th>
-                <th><?php _e('Email', 'custom-plugin'); ?></th>
-                <th><?php _e('Message', 'custom-plugin'); ?></th>
-                <th><?php _e('Date', 'custom-plugin'); ?></th>
-              </tr>
-            </thead>
-            <tbody>
-              <?php foreach (array_slice($data, 0, 10) as $row): ?>
-                <tr>
-                  <td><?php echo esc_html($row->id); ?></td>
-                  <td><?php echo esc_html($row->name); ?></td>
-                  <td><?php echo esc_html($row->email); ?></td>
-                  <td><?php echo esc_html(wp_trim_words($row->message, 10)); ?></td>
-                  <td><?php echo esc_html(date('Y-m-d H:i', strtotime($row->created_at))); ?></td>
-                </tr>
-              <?php endforeach; ?>
-            </tbody>
-          </table>
-        <?php else: ?>
-          <p><?php _e('No submissions found.', 'custom-plugin'); ?></p>
-        <?php endif; ?>
-      </div>
-    </div>
-
-    <div class="postbox">
-      <h2 class="hndle"><span><?php _e('Quick Actions', 'custom-plugin'); ?></span></h2>
-      <div class="inside">
-        <p><?php _e('Use these shortcodes in your posts or pages:', 'custom-plugin'); ?></p>
-        <ul>
-          <li><code>[custom_form]</code> - <?php _e('Display contact form', 'custom-plugin'); ?></li>
-          <li><code>[custom_message text="Your message"]</code> - <?php _e('Display custom message', 'custom-plugin'); ?></li>
-          <li><code>[custom_data limit="5"]</code> - <?php _e('Display recent submissions', 'custom-plugin'); ?></li>
-        </ul>
-      </div>
-    </div>
   </div>
 </div>

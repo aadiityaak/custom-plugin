@@ -14,7 +14,6 @@ class Admin
         add_action('admin_menu', array($this, 'add_admin_menu'));
         add_action('admin_enqueue_scripts', array($this, 'enqueue_scripts'));
         add_action('admin_init', array($this, 'init'));
-        add_action('wp_ajax_custom_plugin_save_data', array($this, 'save_data'));
     }
 
     public function init()
@@ -58,58 +57,9 @@ class Admin
     {
         if (strpos($hook, 'custom-plugin') !== false) {
             // Enqueue Alpine.js
-            wp_enqueue_script('alpinejs', 'https://unpkg.com/alpinejs@3.13.3/dist/cdn.min.js', array(), '3.13.3', true);
+            wp_enqueue_script('custom-plugin-alpine', 'https://unpkg.com/alpinejs@3.13.3/dist/cdn.min.js', array(), '3.13.3', true);
 
-            wp_enqueue_style('custom-plugin-admin', CUSTOM_PLUGIN_URL . 'assets/admin/css/admin.css', array(), CUSTOM_PLUGIN_VERSION);
-            wp_enqueue_script('custom-plugin-admin', CUSTOM_PLUGIN_URL . 'assets/admin/js/admin.js', array('jquery', 'alpinejs'), CUSTOM_PLUGIN_VERSION, true);
-
-            wp_localize_script('custom-plugin-admin', 'customPluginData', array(
-                'root' => esc_url_raw(rest_url()),
-                'nonce' => wp_create_nonce('wp_rest'),
-                'ajax_url' => admin_url('admin-ajax.php'), // Keep for existing functionality if needed
-                'ajax_nonce' => wp_create_nonce('custom_plugin_nonce')
-            ));
+            wp_enqueue_style('custom-plugin-admin', CUSTOM_PLUGIN_URL . 'assets/admin/css/admin.css', array(), time()); // Use time() for cache busting
         }
-    }
-
-    public function save_data()
-    {
-        if (!wp_verify_nonce($_POST['nonce'], 'custom_plugin_nonce')) {
-            wp_die(__('Security check failed', 'custom-plugin'));
-        }
-
-        if (!current_user_can('manage_options')) {
-            wp_die(__('You do not have permission to perform this action', 'custom-plugin'));
-        }
-
-        global $wpdb;
-        $table_name = $wpdb->prefix . 'custom_plugin_data';
-
-        $name = sanitize_text_field($_POST['name']);
-        $email = sanitize_email($_POST['email']);
-        $message = sanitize_textarea_field($_POST['message']);
-
-        $result = $wpdb->insert(
-            $table_name,
-            array(
-                'name' => $name,
-                'email' => $email,
-                'message' => $message
-            ),
-            array('%s', '%s', '%s')
-        );
-
-        if ($result !== false) {
-            wp_send_json_success(__('Data saved successfully!', 'custom-plugin'));
-        } else {
-            wp_send_json_error(__('Failed to save data.', 'custom-plugin'));
-        }
-    }
-
-    public static function get_all_data()
-    {
-        global $wpdb;
-        $table_name = $wpdb->prefix . 'custom_plugin_data';
-        return $wpdb->get_results("SELECT * FROM $table_name ORDER BY created_at DESC");
     }
 }
