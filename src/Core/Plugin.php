@@ -6,6 +6,9 @@ use CustomPlugin\Admin\Admin;
 use CustomPlugin\Frontend\Frontend;
 use CustomPlugin\Frontend\Shortcode;
 use CustomPlugin\Api\SettingsController;
+use CustomPlugin\Core\PostTypes;
+use CustomPlugin\Core\Taxonomies;
+use CustomPlugin\Core\CoreFeatures;
 
 if (!defined('ABSPATH')) {
   exit;
@@ -39,6 +42,9 @@ class Plugin
     new Frontend();
     new Shortcode();
     new SettingsController();
+    new PostTypes();
+    new Taxonomies();
+    new CoreFeatures();
   }
 
   public function activate()
