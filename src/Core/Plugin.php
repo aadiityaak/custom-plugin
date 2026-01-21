@@ -6,6 +6,7 @@ use CustomPlugin\Admin\Admin;
 use CustomPlugin\Frontend\Frontend;
 use CustomPlugin\Frontend\Shortcode;
 use CustomPlugin\Api\SettingsController;
+use CustomPlugin\Api\ContactController;
 use CustomPlugin\Core\PostTypes;
 use CustomPlugin\Core\Taxonomies;
 use CustomPlugin\Core\CoreFeatures;
@@ -42,6 +43,7 @@ class Plugin
     new Frontend();
     new Shortcode();
     new SettingsController();
+    new ContactController();
     new PostTypes();
     new Taxonomies();
     new CoreFeatures();
